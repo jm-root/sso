@@ -1,0 +1,8 @@
+.git
+.idea
+.svn
+bench
+docs
+logs
+tests
+yarn.lock

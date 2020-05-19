@@ -1,0 +1,22 @@
+{
+  "name": "jm-sso-mq",
+  "version": "1.0.0",
+  "description": "mq plugin for jm-sso",
+  "main": "./lib/index",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jm-root/sso.git"
+  },
+  "keywords": [
+    "javascript",
+    "jm-sso-mq"
+  ],
+  "author": {
+    "name": "Jeff YU"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jm-root/sso/issues"
+  },
+  "homepage": "https://github.com/jm-root/sso"
+}
