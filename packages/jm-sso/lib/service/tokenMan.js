@@ -24,7 +24,6 @@ class TokenMan extends EventEmitter {
   constructor (opts = {}) {
     super()
     Object.assign(this, opts)
-
     this.redis = require('./redis')(opts)
   }
 
@@ -34,16 +33,15 @@ class TokenMan extends EventEmitter {
    * @return {String} token
    */
   create (id = '', hash) {
-    console.log(hash || this.hash)
     return Hasher[hash || this.hash](id + Math.random() + Date.now().toString() + this.secret)
   }
 
   getKey (id) {
-    return this.tokenKey + ':' + id
+    return `${this.tokenKey}:${id}`
   }
 
   getIdKey (id) {
-    return this.IdKey + ':' + id
+    return `${this.idKey}:${id}`
   }
 
   async getValueById (id) {

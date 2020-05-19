@@ -6,25 +6,40 @@ beforeAll(async () => {
   router = $.router()
 })
 
-let signon = async (opts = { id: 1 }) => {
-  let doc = await router.post('/signon', { id: 1 })
+let token = null
+
+async function signon () {
+  const doc = await router.post('/signon', { id: '1' })
+  token = doc.token
   return doc
 }
 
+async function verify () {
+  return router.get('/verify', { token })
+}
+
+async function touch () {
+  return router.get('/touch', { token, name: 'jeff', id: '2' })
+}
+
+async function signout () {
+  return router.get('/signout', { token })
+}
+
 test('signon', async () => {
-  let doc = await signon()
-  expect(doc.token).toBeTruthy()
+  await signon()
+  expect(token).toBeTruthy()
+  await verify()
 })
 
 test('touch', async () => {
-  let doc = await signon()
-  let token = doc.token
-  let doc2 = await router.get('/touch', { token: token, data: { name: 'jeff' } })
+  const doc = await signon()
+  const doc2 = await touch()
   expect(doc2.time > doc.time).toBeTruthy()
 })
 
 test('signout', async () => {
-  let doc = await signon()
-  let token = doc.token
-  doc = await router.get('/signout', { token })
+  await signon()
+  const doc = await signout()
+  expect(doc).toBeTruthy()
 })

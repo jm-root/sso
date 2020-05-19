@@ -20,7 +20,7 @@ module.exports = class extends Service {
       redis,
       token_key: tokenKey = TokenKey,
       token_expire: tokenExpire = TokenExpire,
-      enalbe_id: enableId = false,
+      enable_id: enableId = false,
       id_key: idKey = IdKey,
       secret = '',
       hash = 'sha256'
@@ -67,7 +67,7 @@ module.exports = class extends Service {
    */
   async signon (opts = {}) {
     this.emit('beforeSignon', opts)
-    let doc = await this.tokenMan.add(opts)
+    const doc = await this.tokenMan.add(opts)
     this.emit('signon', doc)
     return doc
   }
@@ -79,7 +79,7 @@ module.exports = class extends Service {
    * @returns {Promise<*>}
    */
   async touch (token, opts = {}) {
-    let doc = await this.tokenMan.touch(token, opts)
+    const doc = await this.tokenMan.touch(token, opts)
     this.emit('touch', doc)
     return doc
   }
@@ -90,7 +90,7 @@ module.exports = class extends Service {
    * @returns {Promise<*>}
    */
   async signout (token) {
-    let doc = await this.tokenMan.verify(token)
+    const doc = await this.tokenMan.verify(token)
     await this.tokenMan.delete(token)
     this.emit('signout', doc)
     return doc
@@ -103,6 +103,7 @@ module.exports = class extends Service {
    */
   async clearTokenById (id) {
     const tokens = await this.tokenMan.deleteById(id)
+    this.emit('signout.id', { id, tokens })
     return {
       id,
       tokens
@@ -115,7 +116,6 @@ module.exports = class extends Service {
    * @returns {Promise<void>}
    */
   async verify (token) {
-    let doc = await this.tokenMan.verify(token)
-    return doc
+    return this.tokenMan.verify(token)
   }
 }

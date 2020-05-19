@@ -34,6 +34,9 @@ class $ extends Service {
       .on('signout', opts => {
         opts && (this.send('sso.signout', opts))
       })
+      .on('signout.id', opts => {
+        opts && (this.send('sso.signout.id', opts))
+      })
   }
 
   async send (topic, message) {
