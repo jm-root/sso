@@ -15,7 +15,7 @@ docker run -d name sso  -e redis=redis://localhost jamma/sso
 
 ### jm-server
 
-请参考 [jm-server](https://github.com/jm-root/ms/tree/master/packages/jm-server)
+请参考 [jm-server](https://github.com/jm-root/server/tree/master/packages/jm-server)
 
 ### jm-sso
 
