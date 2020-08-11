@@ -40,13 +40,13 @@ class TokenMan extends EventEmitter {
     return `${this.tokenKey}:${id}`
   }
 
-  getIdKey (id) {
-    return `${this.idKey}:${id}`
+  getIdKey (id, clientId = '') {
+    return `${this.idKey}:${id}${clientId ? ':' + clientId : ''}`
   }
 
-  async getValueById (id) {
+  async getValueById (id, clientId = '') {
     try {
-      let mapToken = await this.redis.get(this.getIdKey(id))
+      let mapToken = await this.redis.get(this.getIdKey(id, clientId))
       mapToken || (mapToken = '{}')
       mapToken = JSON.parse(mapToken)
       for (let token in mapToken) {
@@ -67,6 +67,7 @@ class TokenMan extends EventEmitter {
    * @example
    * opts参数:{
    *  id: user id(可选)
+   *  clientId: 终端 id(可选)
    *  token: token(可选)
    *  expire: token过期时间, 单位秒, 0代表永不过期(可选)
    *  data: 用户数据(可选)
@@ -81,11 +82,12 @@ class TokenMan extends EventEmitter {
     try {
       await redis.set(this.getKey(opts.token), JSON.stringify(opts), 'EX', opts.expire)
       if (this.enableId && opts.id) {
-        let mapToken = await this.getValueById(opts.id)
+        let mapToken = await this.getValueById(opts.id, opts.clientId)
         mapToken[opts.token] = opts
-        let expire = await redis.ttl(this.getIdKey(opts.id))
+        const key = this.getIdKey(opts.id, opts.clientId)
+        let expire = await redis.ttl(key)
         if (expire < Number(opts.expire)) expire = opts.expire
-        await redis.set(this.getIdKey(opts.id), JSON.stringify(mapToken), 'EX', expire)
+        await redis.set(key, JSON.stringify(mapToken), 'EX', expire)
       }
       return opts
     } catch (e) {
@@ -132,9 +134,10 @@ class TokenMan extends EventEmitter {
     try {
       await this.redis.set(this.getKey(token), JSON.stringify(doc), 'EX', doc.expire)
       if (this.enableId && doc.id) {
-        let expire = await this.redis.ttl(this.getIdKey(doc.id))
+        const key = this.getIdKey(doc.id, doc.clientId)
+        let expire = await this.redis.ttl(key)
         if (expire < Number(doc.expire)) expire = doc.expire
-        await this.redis.expire(this.getIdKey(doc.id), expire)
+        await this.redis.expire(key, expire)
       }
       return doc
     } catch (e) {
@@ -156,9 +159,16 @@ class TokenMan extends EventEmitter {
         if (doc) {
           doc = JSON.parse(doc)
           if (doc.id) {
-            let mapToken = await this.getValueById(doc.id)
+            let mapToken = await this.getValueById(doc.id, doc.clientId)
             delete mapToken[token]
-            await this.redis.set(this.getIdKey(doc.id), JSON.stringify(mapToken))
+            const key = this.getIdKey(doc.id, doc.clientId)
+            const value = JSON.stringify(mapToken)
+            if (value === '{}') {
+              await this.redis.del(key)
+            } else {
+              let expire = await this.redis.ttl(key)
+              await this.redis.set(key, value, 'EX', expire)
+            }
           }
         }
       }
@@ -170,14 +180,14 @@ class TokenMan extends EventEmitter {
     }
   }
 
-  async deleteById (id) {
+  async deleteById (id, clientId = '') {
     if (!id) throw error.err(Err.FA_INVALID_ID)
     try {
-      let mapToken = await this.getValueById(id)
+      let mapToken = await this.getValueById(id, clientId)
       let tokens = Object.keys(mapToken)
       let promises = tokens.map((token) => this.delete(token))
       let results = await Promise.all(promises)
-      await this.redis.del(this.getIdKey(id))
+      await this.redis.del(this.getIdKey(id, clientId))
       return results
     } catch (e) {
       logger.error(e)

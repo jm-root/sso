@@ -99,13 +99,15 @@ module.exports = class extends Service {
   /**
    * 清空指定id下所有token
    * @param id
+   * @param clientId
    * @returns {Promise<void>}
    */
-  async clearTokenById (id) {
-    const tokens = await this.tokenMan.deleteById(id)
+  async clearTokenById (id, clientId = '') {
+    const tokens = await this.tokenMan.deleteById(id, clientId)
     this.emit('signout.id', { id, tokens })
     return {
       id,
+      clientId,
       tokens
     }
   }

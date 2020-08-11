@@ -22,7 +22,8 @@ module.exports = function (service) {
 
   async function signout (opts = {}) {
     const id = opts.params.id
-    return id ? service.clearTokenById(id) : service.signout(opts.token)
+    const clientId = opts.data.clientId
+    return id ? service.clearTokenById(id, clientId) : service.signout(opts.token)
   }
 
   async function verify (opts = {}) {
